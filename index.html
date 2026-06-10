@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSaathi - Live Mandi Rates & Weather</title>
+    <!-- Tailwind CSS for Modern Responsive Design -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-emerald-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-wheat-awn text-2xl text-amber-300"></i>
+                <span class="text-xl font-bold tracking-wide">FarmSaathi</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Language Selector -->
+                <select id="langSelect" onchange="changeLanguage()" class="bg-emerald-700 text-white text-sm rounded-md px-2 py-1 outline-none border border-emerald-500 cursor-pointer">
+                    <option value="mr">मराठी</option>
+                    <option value="hi">हिंदी</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+        
+        <!-- HERO / BANNER SECTION -->
+        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="relative z-10 space-y-2">
+                <span class="bg-emerald-700/50 text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider" id="heroBadge">लाइव्ह अपडेट</span>
+                <h1 class="text-2xl md:text-3xl font-bold" id="heroTitle">शेतकरी बांधवांनो, आपले स्वागत आहे!</h1>
+                <p class="text-sm md:text-base text-emerald-100 max-w-xl" id="heroDesc">आजचे ताजे बाजार भाव आणि हवामान अंदाज एकाच क्लिकवर पहा. तुमचा खरा डिजिटल सांगाती.</p>
+            </div>
+            <i class="fa-solid fa-tractor text-9xl text-emerald-400/20 absolute -right-5 -bottom-5 transform -rotate-12 pointer-events-none"></i>
+        </div>
+
+        <!-- TWO COLUMN LAYOUT: WEATHER & MANDI QUICK SEARCH -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- WEATHER CARD (1 Column) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                    <h2 class="font-semibold text-gray-700" id="weatherTitle"><i class="fa-solid fa-cloud-sun text-emerald-500 mr-2"></i>हवामान अंदाज</h2>
+                    <span class="text-xs text-gray-400" id="weatherLive">Live</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-4xl font-bold text-gray-800">31°C</div>
+                        <div class="text-sm text-gray-500 mt-1" id="weatherStatus">आंशिक ढगाळ वातावरण</div>
+                    </div>
+                    <i class="fa-solid fa-cloud-sun-rain text-5xl text-amber-400 animate-pulse"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-2 text-xs text-gray-500">
+                    <div class="bg-gray-50 p-2 rounded-lg"><i class="fa-solid fa-droplet text-blue-400 mr-1"></i> <span id="humidityLabel">आद्रता:</span> 65%</div>
+                    <div class="bg-gray-50 p-2 rounded-lg"><i class="fa-solid fa-wind text-gray-400 mr-1"></i> <span id="windLabel">वारा:</span> 12 km/h</div>
+                </div>
+            </div>
+
+            <!-- MANDI SEARCH & FILTER (2 Columns) -->
+            <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between space-y-4">
+                <div class="space-y-2">
+                    <h2 class="font-semibold text-gray-700" id="searchTitle"><i class="fa-solid fa-magnifying-glass-chart text-emerald-500 mr-2"></i>बाजारभाव शोधा</h2>
+                    <p class="text-xs text-gray-400" id="searchDesc">तुमच्या जवळील बाजारपेठ किंवा शेतीमाल थेट शोधण्यासाठी खालील सर्च बार वापरा.</p>
+                </div>
+                <div class="relative mt-2">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-gray-400"></i>
+                    <input type="text" id="mandiSearch" onkeyup="searchMandi()" placeholder="शेततीमाल किंवा मार्केटचे नाव टाका..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm transition-all">
+                </div>
+            </div>
+        </div>
+
+        <!-- DYNAMIC MANDI RATES TABLE SECTION -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 class="font-bold text-gray-700 text-base md:text-lg" id="tableTitle"><i class="fa-solid fa-list-check text-emerald-500 mr-2"></i>आजचे ताजे बाजार भाव (Live Mandi Rates)</h3>
+                <span class="text-xs bg-red-100 text-red-600 font-medium px-2 py-0.5 rounded-md animate-pulse" id="updateBadge">नवीन अपडेट</span>
+            </div>
+
+            <!-- RESPONSIVE TABLE -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="mandiTable">
+                    <thead>
+                        <tr class="bg-emerald-50/60 text-emerald-800 text-xs font-semibold uppercase tracking-wider border-b border-emerald-100">
+                            <th class="p-4" id="thMarket">बाजारपेठ (Market)</th>
+                            <th class="p-4" id="thCrop">शेततीमाल (Crop)</th>
+                            <th class="p-4 text-center" id="thMin">किमान भाव (Min)</th>
+                            <th class="p-4 text-center" id="thMax">कमाल भाव (Max)</th>
+                            <th class="p-4 text-center" id="thAvg">सर्वसाधारण (Avg)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-gray-100">
+                        <!-- Row 1 -->
+                        <tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="p-4 font-medium text-gray-900">कोल्हापूर (Kolhapur)</td>
+                            <td class="p-4 text-gray-700 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                <span>गुळ (Jaggery)</span>
+                            </td>
+                            <td class="p-4 text-center text-gray-600">₹3,800</td>
+                            <td class="p-4 text-center text-emerald-600 font-medium">₹4,500</td>
+                            <td class="p-4 text-center text-gray-900 font-semibold bg-gray-50/30">₹4,200</td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="p-4 font-medium text-gray-900">पुणे (Pune)</td>
+                            <td class="p-4 text-gray-700 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                                <span>कांदा (Onion)</span>
+                            </td>
+                            <td class="p-4 text-center text-gray-600">₹1,200</td>
+                            <td class="p-4 text-center text-emerald-600 font-medium">₹2,200</td>
+                            <td class="p-4 text-center text-gray-900 font-semibold bg-gray-50/30">₹1,800</td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="p-4 font-medium text-gray-900">नागपूर (Nagpur)</td>
+                            <td class="p-4 text-gray-700 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                                <span>संत्री (Orange)</span>
+                            </td>
+                            <td class="p-4 text-center text-gray-600">₹4,000</td>
+                            <td class="p-4 text-center text-emerald-600 font-medium">₹6,500</td>
+                            <td class="p-4 text-center text-gray-900 font-semibold bg-gray-50/30">₹5,300</td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="p-4 font-medium text-gray-900">नाशिक (Nashik)</td>
+                            <td class="p-4 text-gray-700 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                <span>टोमॅटो (Tomato)</span>
+                            </td>
+                            <td class="p-4 text-center text-gray-600">₹800</td>
+                            <td class="p-4 text-center text-emerald-600 font-medium">₹1,600</td>
+                            <td class="p-4 text-center text-gray-900 font-semibold bg-gray-50/30">₹1,200</td>
+                        </tr>
+                        <!-- Row 5 -->
+                        <tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="p-4 font-medium text-gray-900">अमरावती (Amravati)</td>
+                            <td class="p-4 text-gray-700 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-yellow-600"></span>
+                                <span>सोयाबीन (Soybean)</span>
+                            </td>
+                            <td class="p-4 text-center text-gray-600">₹4,200</td>
+                            <td class="p-4 text-center text-emerald-600 font-medium">₹4,850</td>
+                            <td class="p-4 text-center text-gray-900 font-semibold bg-gray-50/30">₹4,600</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty Search Alert -->
+            <div id="noResults" class="hidden p-8 text-center text-gray-400 text-sm">
+                <i class="fa-solid fa-folder-open text-3xl mb-2 block text-gray-300"></i>
+                माहिती सापडली नाही. कृपया दुसरा शब्द टाईप करा.
+            </div>
+        </div>
+    </main>
+
+    <!-- AD SENSE MANDATORY COMPLIANCE FOOTER -->
+    <footer class="bg-gray-900 text-gray-400 text-xs border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 py-6 space-y-4 text-center">
+            <div class="flex flex-wrap justify-center gap-6 text-gray-300 text-sm">
+                <a href="#" class="hover:text-emerald-400 transition-colors">About Us</a>
+                <a href="#" class="hover:text-emerald-400 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-emerald-400 transition-colors">Terms & Conditions</a>
+                <a href="#" class="hover:text-emerald-400 transition-colors">Contact Us</a>
+            </div>
+            <p class="max-w-md mx-auto text-gray-500 leading-relaxed">
+                Disclaimer: अस्वीकरण: वर दिलेले बाजारभाव विविध सरकारी आणि स्थानिक व्यापारी स्त्रोतांकडून गोळा केले आहेत. दरांमध्ये अंशतः बदल असू शकतो.
+            </p>
+            <div class="text-gray-600 pt-2 border-t border-gray-800/60">
+                &copy; 2026 FarmSaathi. All Rights Reserved. Designed for Farmers Success.
+            </div>
+        </div>
+    </footer>
+
+    <!-- LIGHTWEIGHT LOGIC SCRIPT -->
+    <script>
+        // Realtime Local Search Engine for Mandi Table
+        function searchMandi() {
+            let input = document.getElementById('mandiSearch').value.toLowerCase();
+            let table = document.getElementById('mandiTable');
+            let tr = table.getElementsByTagName('tr');
+            let noResults = document.getElementById('noResults');
+            let found = false;
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdMarket = tr[i].getElementsByTagName('td')[0];
+                let tdCrop = tr[i].getElementsByTagName('td')[1];
+                
+                if (tdMarket || tdCrop) {
+                    let marketText = tdMarket.textContent || tdMarket.innerText;
+                    let cropText = tdCrop.textContent || tdCrop.innerText;
+                    
+                    if (marketText.toLowerCase().indexOf(input) > -1 || cropText.toLowerCase().indexOf(input) > -1) {
+                        tr[i].style.display = "";
+                        found = true;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+            
+            // Show alert if no items found
+            if(found) {
+                noResults.classList.add('hidden');
+                table.classList.remove('hidden');
+            } else {
+                noResults.classList.remove('hidden');
+                table.classList.add('hidden');
+            }
+        }
+
+        // Language Translation Repository
+        const translations = {
+            mr: {
+                heroBadge: "लाइव्ह अपडेट",
+                heroTitle: "शेतकरी बांधवांनो, आपले स्वागत आहे!",
+                heroDesc: "आजचे ताजे बाजार भाव आणि हवामान अंदाज एकाच क्लिकवर पहा. तुमचा खरा डिजिटल सांगाती.",
+                weatherTitle: "हवामान अंदाज",
+                weatherStatus: "आंशिक ढगाळ वातावरण",
+                humidityLabel: "आद्रता:",
+                windLabel: "वारा:",
+                searchTitle: "बाजारभाव शोधा",
+                searchDesc: "तुमच्या जवळील बाजारपेठ किंवा शेतीमाल थेट शोधण्यासाठी खालील सर्च बार वापरा.",
+                mandiSearchPlaceholder: "शेततीमाल किंवा मार्केटचे नाव टाका...",
+                tableTitle: "आजचे ताजे बाजार भाव (Live Mandi Rates)",
+                updateBadge: "नवीन अपडेट",
+                thMarket: "बाजारपेठ (Market)",
+                thCrop: "शेततीमाल (Crop)",
+                thMin: "किमान भाव (Min)",
+                thMax: "कमाल भाव (Max)",
+                thAvg: "सर्वसाधारण (Avg)",
+                noResults: "माहिती सापडली नाही. कृपया दुसरा शब्द टाईप करा."
+            },
+            hi: {
+                heroBadge: "लाइव अपडेट",
+                heroTitle: "किसान भाइयों, आपका स्वागत है!",
+                heroDesc: "आज के ताजा मंडी भाव और मौसम का मिजाज एक ही क्लिक में देखें। आपका सच्चा डिजिटल साथी।",
+                weatherTitle: "मौसम का पूर्वानुमान",
+                weatherStatus: "आंशिक रूप से बादल छाए हैं",
+                humidityLabel: "आर्द्रता:",
+                windLabel: "हवा:",
+                searchTitle: "मंडी भाव खोजें",
+                searchDesc: "अपने नजदीकी बाजार या फसल को खोजने के लिए नीचे दिए गए सर्च बार का उपयोग करें।",
+                mandiSearchPlaceholder: "फसल या मंडी का नाम लिखें...",
+                tableTitle: "आज के ताजा मंडी भाव (Live Mandi Rates)",
+                updateBadge: "नया अपडेट",
+                thMarket: "बाजार (Market)",
+                thCrop: "फसल (Crop)",
+                thMin: "न्यूनतम भाव (Min)",
+                thMax: "अधिकतम भाव (Max)",
+                thAvg: "औसत भाव (Avg)",
+                noResults: "जानकारी नहीं मिली। कृपया कोई दूसरा शब्द खोजें।"
+            },
+            en: {
+                heroBadge: "LIVE UPDATE",
+                heroTitle: "Welcome, Respected Farmers!",
+                heroDesc: "Check today's latest mandi rates and weather forecasts in one single click. Your true digital helper.",
+                weatherTitle: "Weather Forecast",
+                weatherStatus: "Partly Cloudy",
+                humidityLabel: "Humidity:",
+                windLabel: "Wind:",
+                searchTitle: "Search Mandi Rates",
+                searchDesc: "Use the search bar below to directly look up your nearby market or specific crops.",
+                mandiSearchPlaceholder: "Type crop or market name...",
+                tableTitle: "Today's Live Mandi Rates",
+                updateBadge: "NEW UPDATE",
+                thMarket: "Market",
+                thCrop: "Crop",
+                thMin: "Min Rate",
+                thMax: "Max Rate",
+                thAvg: "Average",
+                noResults: "No records found. Please try another keyword."
+            }
+        };
+
+        // Multi-Language Toggle Action
+        function changeLanguage() {
+            let selectedLang = document.getElementById('langSelect').value;
+            let data = translations[selectedLang];
+
+            document.getElementById('heroBadge').innerText = data.heroBadge;
+            document.getElementById('heroTitle').innerText = data.heroTitle;
+            document.getElementById('heroDesc').innerText = data.heroDesc;
+            document.getElementById('weatherTitle').innerHTML = `<i class="fa-solid fa-cloud-sun text-emerald-500 mr-2"></i>` + data.weatherTitle;
+            document.getElementById('weatherStatus').innerText = data.weatherStatus;
+            document.getElementById('humidityLabel').innerText = data.humidityLabel;
+            document.getElementById('windLabel').innerText = data.windLabel;
+            document.getElementById('searchTitle').innerHTML = `<i class="fa-solid fa-magnifying-glass-chart text-emerald-500 mr-2"></i>` + data.searchTitle;
+            document.getElementById('searchDesc').innerText = data.searchDesc;
+            document.getElementById('mandiSearch').placeholder = data.mandiSearchPlaceholder;
+            document.getElementById('tableTitle').innerHTML = `<i class="fa-solid fa-list-check text-emerald-500 mr-2"></i>` + data.tableTitle;
+            document.getElementById('updateBadge').innerText = data.updateBadge;
+            document.getElementById('thMarket').innerText = data.thMarket;
+            document.getElementById('thCrop').innerText = data.thCrop;
+            document.getElementById('thMin').innerText = data.thMin;
+            document.getElementById('thMax').innerText = data.thMax;
+            document.getElementById('thAvg').innerText = data.thAvg;
+            document.getElementById('noResults').innerHTML = `<i class="fa-solid fa-folder-open text-3xl mb-2 block text-gray-300"></i>` + data.noResults;
+        }
+    </script>
+</body>
+</html>
+
